@@ -22,7 +22,11 @@ do
         read  -r -p "Enter Table Name :" input 
         input=$(tr " " "_" <<< $input)
         
-        if [[ $input = [0-9]* ]];then   
+        if [[ -z $input ]];then 
+            echo -e "$Red Error 200: Table Name Cannot be Empty $Reset"
+        elif [[ ${#input} -gt 64 ]];then 
+            echo -e "$Red Error 205: Table Name Too Long (max 64 characters) $Reset"
+        elif [[ $input = [0-9]* ]];then   
             echo -e "$Red Error 201: Name of Table Can't Start Numbers $Reset"
         else 
             case  $input in
@@ -30,8 +34,9 @@ do
                 echo -e "$Red Error 202: Name of Table Can't be _$Reset" 
             ;;
             +([a-zA-Z0-9_]))
-                if [[ -f ./.DBMS/$currentDB/$input ]];then 
-                    echo -e "$Red Error 203: Table Already Exist$Reset"  
+                existing=$(ls -F ./.DBMS/$currentDB/ 2>/dev/null | grep -v '/' | grep -v '^\.' | grep -ix "$input")
+                if [[ -n $existing ]];then 
+                    echo -e "$Red Error 203: Table Already Exists (name is case-insensitive)$Reset"  
                 else 
                     echo "Wait Create Table ......"
                     touch ./.DBMS/$currentDB/$input
@@ -71,7 +76,9 @@ do
         read  -r -p "Enter Table Name :" input 
         input=$(tr " " "_" <<< $input)
         
-        if [[ $input = [0-9]* ]];then   
+        if [[ -z $input ]];then 
+            echo -e "$Red Error 200: Table Name Cannot be Empty $Reset"
+        elif [[ $input = [0-9]* ]];then   
             echo -e "$Red Error 201: Name of Table Can't Start Numbers $Reset"
         else 
             case  $input in
@@ -112,11 +119,16 @@ do
             select tableName in $tableList
             do   
                 if [[ -n $tableName && -f ./.DBMS/$currentDB/$tableName ]];then 
-                    echo "Wait delete Table ......."
-                    rm ./.DBMS/$currentDB/$tableName
-                    rm ./.DBMS/$currentDB/.$tableName.meta 2>/dev/null
-                    sleep 1 
-                    echo "Table is Deleted Successfully ......."
+                    read -p "Are you sure you want to delete table '$tableName'? (yes/no): " confirm
+                    if [[ $confirm =~ ^[Yy][Ee][Ss]$ || $confirm =~ ^[Yy]$ ]];then
+                        echo "Wait delete Table ......."
+                        rm ./.DBMS/$currentDB/$tableName
+                        rm ./.DBMS/$currentDB/.$tableName.meta 2>/dev/null
+                        sleep 1 
+                        echo "Table is Deleted Successfully ......."
+                    else
+                        echo "Delete operation cancelled"
+                    fi
                 else 
                     echo -e "$Red Error 404: Table Not Found $Reset"
                 fi 
