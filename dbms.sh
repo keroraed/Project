@@ -49,7 +49,12 @@ do
         fi
         read  -r -p "Enter your DB Name :" input 
         input=$(tr " " "_" <<< $input)
-        if [[ $input = [0-9]* ]];then   
+        
+        if [[ -z $input ]];then 
+            echo -e "$Red Error 100: DB Name Cannot be Empty $Reset"
+        elif [[ ${#input} -gt 64 ]];then 
+            echo -e "$Red Error 105: DB Name Too Long (max 64 characters) $Reset"
+        elif [[ $input = [0-9]* ]];then   
             echo -e "$Red Error 101: Name of DB Can't Start Numbers $Reset"
         else 
             case  $input in
@@ -57,8 +62,9 @@ do
                 echo -e "$Red Error 102: Name of DB Can't be _$Reset" 
             ;;
             +([a-zA-Z0-9_]))
-                if [[ -d ./.DBMS/$input ]];then 
-                    echo -e "$Red Error 103: Name of DB Already Exist$Reset"  
+                existing=$(ls -F ./.DBMS 2>/dev/null | grep '/' | tr -d '/' | grep -ix "$input")
+                if [[ -n $existing ]];then 
+                    echo -e "$Red Error 103: DB Name Already Exists (name is case-insensitive)$Reset"  
                 else 
                     echo "Wait Create DB ......"
                     mkdir ./.DBMS/$input
@@ -71,10 +77,10 @@ do
                 fi 
             ;;
             *)
-            echo -e "$Red Error 104: Name of Folder Contains Special Character : $Reset"  
+                echo -e "$Red Error 104: Name of Folder Contains Special Character : $Reset"  
             ;;
             esac
-        fi 
+        fi
 
     ;;
     2 | "ListAllDB")
@@ -85,10 +91,11 @@ do
             # break
             mkdir ./.DBMS
         fi 
-        ls -F ./.DBMS | grep '/' | tr -d '/'
         data=$(ls -F ./.DBMS | grep '/' | tr -d '/')
         if [[ -z $data ]] ;then 
             echo -e "$Red Error 107 : DBMS Empty No DataBases for Listing $Reset"
+        else
+            echo "$data"
         fi 
 
     ;;
@@ -102,7 +109,10 @@ do
         fi
         read  -r -p "Enter your DB Name :" input #mina nagy
         input=$(tr " " "_" <<< $input) #mina_nagy
-        if [[ $input = [0-9]* ]];then   
+        
+        if [[ -z $input ]];then 
+            echo -e "$Red Error 100: DB Name Cannot be Empty $Reset"
+        elif [[ $input = [0-9]* ]];then   
             echo -e "$Red Error 101: Name of DB Can't Start Numbers $Reset"
         else 
             case  $input in
@@ -121,11 +131,10 @@ do
                 fi 
             ;;
             *)
-            echo -e "$Red Error 104: Name of Folder Contains Special Character : $Reset"  
+                echo -e "$Red Error 104: Name of Folder Contains Special Character : $Reset"  
             ;;
             esac
-        fi 
-
+        fi
 
     ;;
     4 | "RemoveDB")
@@ -135,10 +144,15 @@ do
         select dbName in $(ls -F ./.DBMS | grep '/' | tr -d '/')
         do   
             if [[ -n $dbName && -d ./.DBMS/$dbName ]];then 
-                echo "Wait delete DB ......."
-                rm -r ./.DBMS/$dbName
-                sleep 1 
-                echo "DB is Deleted Secussfuly  ......."
+                read -p "Are you sure you want to delete '$dbName'? (yes/no): " confirm
+                if [[ $confirm =~ ^[Yy][Ee][Ss]$ || $confirm =~ ^[Yy]$ ]];then
+                    echo "Wait delete DB ......."
+                    rm -r ./.DBMS/$dbName
+                    sleep 1 
+                    echo "DB is Deleted Secussfuly  ......."
+                else
+                    echo "Delete operation cancelled"
+                fi
             else 
                 echo -e "$Red Error 404 : Name DB Not Found $Reset"
 
