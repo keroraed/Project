@@ -1,8 +1,7 @@
-
 #COMMENT
 LC_COLLATE=C 
 shopt -s extglob 
-export PS3="KeroDB>>"
+export PS3="Kero,BeroDB>>"
 
 # Create DB ==>mkdir 
 # List All DB ==>ls Folders
@@ -154,7 +153,7 @@ do
     ;;
     *)
         echo "Your Choise is  ......." 
-        echo -e "...........$Red Error ............"
+        echo -e "$Red........... Error ............ $Reset"
     ;;
     esac 
 
