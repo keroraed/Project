@@ -64,12 +64,16 @@ do
                             continue 2
                         fi
                         
-                        read -p "Col $i Type (int/str): " t
-                        if [[ ! $t =~ ^(int|str)$ ]]; then
-                            echo -e "$Red Error: Invalid type. Use int or str $Reset"
-                            rm "$DB"
-                            continue 2
-                        fi
+                        valid_type="false"
+                        while [ "$valid_type" = "false" ]; do
+                            read -p "Col $i Type (int/str): " t
+                            t=$(echo "$t" | tr '[:upper:]' '[:lower:]')
+                            if [[ ! $t =~ ^(int|str)$ ]]; then
+                                echo -e "$Red Error: Invalid type. Use int or str $Reset"
+                            else
+                                valid_type="true"
+                            fi
+                        done
                         
                         if [ -z "$header" ]; then
                             header="$n"
